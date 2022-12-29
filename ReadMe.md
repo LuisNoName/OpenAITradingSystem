@@ -17,17 +17,17 @@ The `AbastractPortfolioManager` class, on the other hand, handles the rebalancin
 
 The information below explains in more detail what each class does and what its methods and properties are.
 
-##AbstractDataProvider Class
+## AbstractDataProvider Class
 
 The DataProvider class is responsible for providing data to the rest of the trading system. It retrieves data from external sources and makes it available to the other classes in the system. The main usage of the `AbstractDataProvider` class will be inside of `AbstractStrategy`. Therefore, the implementation is not very strict. One can freely add as many custom methods as one needs in order to make the asset allocation procces in the `AbstractStrategy` class as simple and straightforward as possible.
 
-###Constructors
+### Constructors
 
 - `__init__(self, data_sources: List[str]) -> None`: initializes the DataProvider with a list of data sources to use.
     - Parameters  
     `data_sources`: The list of data sources to use.
 
-###Methods
+### Methods
 
  - `get_price_data(self, assets: List[str], start_date: datetime, end_date: datetime) -> Dict[str, pd.DataFrame]`: retrieves price data for a given list of assets over a specified time period. 
     - Parameters  
@@ -45,12 +45,12 @@ The DataProvider class is responsible for providing data to the rest of the trad
     This method retrieves market data, such as indices or exchange rates.
     - Returns the market data in the form of a Pandas `DataFrame`.
 
-###Properties
+### Properties
  - TBA 
 
 <br>
 
-##AbstractStrategy Class
+## AbstractStrategy Class
 The `AbstractStrategy` class is responsible for defining the investment strategies used by the portfolio. It determines the assets to be included in a single strategy and the weights assigned to each asset. The word 'strategy' might be a slightly problematic, since in this case 'strategy' implies one 'small portfolio'. The reason behind this choice is that in the future versions, extensions to real trading strategies (e.g. technical trading, options trading...) are planned.  
 Nevertheless, this class handles all the logic of a single strategy. Here, the user is defining what assets this strategy can invest in as well as all the logic regarding the asset selection and allocation. Since this is generally the most creative part of investing, the class does not have a very strict form. The only important things (from the perspective of the trading system) are the weights and risk/return metrics of the strategy. The logic of how the assets are selected it completely up to the user to implement freely.
 
@@ -60,14 +60,14 @@ Nevertheless, this class handles all the logic of a single strategy. Here, the u
     - Parameters  
     `data_provider`: An instance of a DataProvider class that provides data for the strategy.
 
-###Methods
+### Methods
 
  - `get_asset_universe(self) -> List[str]`: returns the list of assets included in the investment strategy.
  - `rebalance(self) -> None`: rebalances the portfolio according to the defined investment strategy.
  - `get_risk(self) -> float`: returns the risk of the portfolio according to the defined investment strategy.
  - `get_returns(self) -> float`: returns the expected returns of the portfolio according to the defined investment strategy.
- - `get_VaR(self, alpha: float) -> float`: returns the ```VaR_{alpha}```
-###Properties
+ - `get_VaR(self, alpha: float) -> float`: returns the $VaR_{alpha}$
+### Properties
 
  - `asset_universe: List[str]`: a list containing all the assets that the strategy can invest in  
  - `strategy_weights: Dict[str, float]`: a list containing the names and weights of all assets that are in the current strategy's portfolio.  
@@ -76,7 +76,7 @@ Nevertheless, this class handles all the logic of a single strategy. Here, the u
 
 <br>
 
-##AbstractPortfolio Class
+## AbstractPortfolio Class
 The `AbstractPortfolio` class is responsible for representing the portfolio of strategies (`AbstractStrategy`) managed by the Trading System. It receives updates from `AbstractPortfolioManager` and reflects the current state of the portfolio.  
 Here, one can add and remove strategies, monitor risk/return metrics etc.
 
@@ -87,7 +87,7 @@ Here, one can add and remove strategies, monitor risk/return metrics etc.
     `data_provider`: The data provider to be used by the portfolio.
     `strategies: List[AbstractStrategy]`: The list of strategies in this portfolio.
 
-###Methods
+### Methods
 
  - `set_portfolio(self, assets: List[str], weights: List[float]) -> None`: sets the portfolio to a given list of assets and weights.
     - Parameters  
@@ -103,7 +103,7 @@ Here, one can add and remove strategies, monitor risk/return metrics etc.
  - `get_returns(self) -> float`: returns the expected returns of the portfolio.  
  - `rebalance(self) -> None`: rebalances the portfolio to the target weights.
   
-###Properties
+### Properties
  - `strategies: List[AbstractStrategy]`: list of strategies that are in the portfolio  
  - `portfolio_weights: List[float]`: list of weights assigned to each portfolio (should add up to 1)
  - `data_provider`: instance of `AbstractDataProvider` that provides data to the portfolio 
@@ -111,12 +111,12 @@ Here, one can add and remove strategies, monitor risk/return metrics etc.
 
 <br>
 
-##AbstractPortfolioManager Class
+## AbstractPortfolioManager Class
  
 The `AbstractPortfolioManager` class is responsible for optimizing the portfolio (instance of `AbstractPortfolio`) of strategies (instances of `AbstractStrategy`) based on the given constraints. In the method `rebalance`, the `AbstractPortfolio.weights` property is being optimized and orders are sent to the broker.  
 There is also some functionality around adding and removing constraints to make the process flexible. Since each instance of `AbstractStrategy` has its own instance of `AbstractDataProvider`, the `PortfolioManager` does not have its own `AbstractDataProvider` instance.
 
-###Constructor
+### Constructor
 
 - `__init__(self, trader: AbstractTrader, portfolio: AbstractPortfolio, log: AbstractLogger)`: initializes the `PortfolioManager` with a `DataProvider`, `Trader`, `Portfolio`, and `Logger`.
 
@@ -126,7 +126,7 @@ There is also some functionality around adding and removing constraints to make 
     `portfolio`: The Portfolio to be managed by the PortfolioManager.
     `log`: The Logger to be used by the PortfolioManager.
 
-###Methods
+### Methods
 
  - `rebalance(self) -> None`: rebalances the portfolio based on the given constraints in the `constraints` property of the class
  - `add_constraint(self) -> None`: adds a specific constraint to be used when optimizing the portfolio of strategies
@@ -134,7 +134,7 @@ There is also some functionality around adding and removing constraints to make 
  - `set_constraints(self, Dict[str,float]) -> None`: adds a whole dictionary of constraints to the `constraints` property of the class  
  - `get_constraints(self) -> Dict[str, float]`: returns the `constraints` dictionary.
  - `change_trader(self, new_trader: AbstractTrader) -> None`: changes the trader being used in the rebalancing
-###Properties
+### Properties
  - `constraints: Dict[str, float]`: a dictionary containing all the constraints on the whole portfolio, i.e., `max_risk`, `min_expected_return`, `min_cash_weight` etc.
  - `trader`: The Trader to be used by the PortfolioManager
  - `portfolio`: The Portfolio to be managed by the PortfolioManager
@@ -142,11 +142,11 @@ There is also some functionality around adding and removing constraints to make 
 
 <br>
 
-##AbstractTrader Class
+## AbstractTrader Class
 
 The Trader class is responsible for executing trades on behalf of the portfolio. It receives orders from the PortfolioManager and submits them to the exchange. It also keeps track of the portfolio's balance and positions.
 
-###Methods
+### Methods
 
 - `get_balance(self) -> float`: returns the current balance of the portfolio.
 - `submit_order(self, asset: str, quantity: int, order_type: str, price: Optional[float] = None) -> Union[Dict[str, Any], str]`: submits an order to the exchange.
@@ -168,17 +168,17 @@ The Trader class is responsible for executing trades on behalf of the portfolio.
     
 <br>
 
-##AbstractLogger Class
+## AbstractLogger Class
 
 The Logger class is responsible for logging messages and data in a way that is easily accessible and searchable. It receives messages and data from various parts of the trading system and stores them in a way that is easy to review and analyze.
 
-###Constructors
+### Constructors
 
 - `__init__(self, log_file: str) -> None`: initializes the Logger with a specified log file.
     - Parameters  
     `log_file`: the file to which the log entries will be written.
 
-###Methods
+### Methods
 
 - `log(self, message: str, data: Any = None) -> None`
 This method logs a message with optional data.
